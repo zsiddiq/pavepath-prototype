@@ -1,16 +1,27 @@
 import streamlit as st
-from alert_logic.engine import generate_alert
+import folium
+from streamlit_folium import st_folium
+from surface_overlay.mapper import load_road_data, style_dirt_road
 
-st.title("🛣️ PavePath Dirt Road Aware Routing")
+# Load road data
+road_data = load_road_data("data/roads.geojson")
 
-destination = st.text_input("Enter your destination address")
+# Create base map centered near Perris, CA
+m = folium.Map(location=[33.799, -117.223], zoom_start=13)
 
-# For demo purposes, use mock route segments
-mock_route = ["Maple St", "Dusty Road", "Main Blvd"]
-known_dirt_roads = ["Dusty Road"]
+# Add styled road segments
+for feature in road_data["features"]:
+    coords = feature["geometry"]["coordinates"]
+    name = feature["properties"].get("name", "Unnamed")
+    style = style_dirt_road(feature)
 
-if destination:
-    alert = generate_alert(mock_route, known_dirt_roads)
-    if alert["message"]:
-        st.warning(alert["message"])
-        st.button("Reroute")
+    folium.PolyLine(
+        locations=[(lat, lon) for lon, lat in coords],
+        tooltip=name,
+        **style
+    ).add_to(m)
+
+# Display map in Streamlit
+st.title("🛣️ Dirt Road Overlay Viewer")
+st_folium(m, width=700, height=500)
+
