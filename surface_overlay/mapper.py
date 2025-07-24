@@ -1,18 +1,34 @@
 import json
+import geopandas as gpd
+import pydeck as pdk
 
-def load_road_data(filepath):
-    """Loads GeoJSON-style road data"""
-    with open(filepath, 'r') as f:
-        return json.load(f)
+# Load roads GeoJSON once (adjust path if needed)
+def load_roads(path="data/roads.geojson"):
+    return gpd.read_file(path)
 
-def style_dirt_road(feature):
-    """Return style dict for dirt roads"""
-    return {
-        'color': 'brown',
-        'weight': 3,
-        'opacity': 0.8
-    } if feature['properties'].get('surface') == 'unpaved' else {
-        'color': 'gray',
-        'weight': 2,
-        'opacity': 0.3
-    }
+# Define filters for road types
+def filter_roads(roads_gdf, road_type):
+    if road_type == "Dirt Roads":
+        return roads_gdf[roads_gdf["surface"].str.lower() == "dirt"]
+    elif road_type == "Paved Roads":
+        return roads_gdf[roads_gdf["surface"].str.lower() == "paved"]
+    else:
+        return roads_gdf  # return all
+
+# Render roads as Pydeck layer
+def draw_roads_layer(filtered_roads_gdf, color=[200, 100, 50]):
+    if filtered_roads_gdf.empty:
+        return None
+
+    # Convert to GeoJSON if needed
+    geojson_data = filtered_roads_gdf.__geo_interface__
+
+    layer = pdk.Layer(
+        "GeoJsonLayer",
+        data=geojson_data,
+        get_line_color=color,
+        get_line_width=4,
+        pickable=True
+    )
+    return layer
+
