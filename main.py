@@ -1,30 +1,35 @@
 import streamlit as st
-import folium
-from streamlit_folium import st_folium
-from surface_overlay.mapper import load_road_data, style_dirt_road
-st.title("PavePath Routing Overlay")
+import pydeck as pdk
+from surface_overlay import mapper  # assuming mapper.py is in surface_overlay/
 
-# New toggle input
+st.set_page_config(page_title="PavePath Routing Overlay", layout="wide")
+st.title("PavePath: Routing App with Dirt/Paved Road Toggle")
+
+# 🚦 UI Toggle
 road_type = st.radio("Select road type to display:", ["Dirt Roads", "Paved Roads", "Both"])
-# Load road data
-road_data = load_road_data("data/roads.geojson")
 
-# Create base map centered near Perris, CA
-m = folium.Map(location=[33.799, -117.223], zoom_start=13)
+# 📍 Load and filter roads
+roads_gdf = mapper.load_roads("data/roads.geojson")
+filtered_roads = mapper.filter_roads(roads_gdf, road_type)
 
-# Add styled road segments
-for feature in road_data["features"]:
-    coords = feature["geometry"]["coordinates"]
-    name = feature["properties"].get("name", "Unnamed")
-    style = style_dirt_road(feature)
+# 🗺️ Draw map layer
+road_layer = mapper.draw_roads_layer(filtered_roads)
 
-    folium.PolyLine(
-        locations=[(lat, lon) for lon, lat in coords],
-        tooltip=name,
-        **style
-    ).add_to(m)
+# 🌍 Define map view (centered on sample coordinates—adjust as needed)
+view_state = pdk.ViewState(
+    latitude=33.8,  # Perris, CA area
+    longitude=-117.2,
+    zoom=11,
+    pitch=0
+)
 
-# Display map in Streamlit
-st.title("🛣️ Dirt Road Overlay Viewer")
-st_folium(m, width=700, height=500)
+# 🧭 Render map if layer exists
+if road_layer:
+    st.pydeck_chart(pdk.Deck(
+        map_style="mapbox://styles/mapbox/light-v9",
+        initial_view_state=view_state,
+        layers=[road_layer]
+    ))
+else:
+    st.warning("No roads to display for selected type.")
 
