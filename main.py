@@ -2,7 +2,10 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 from surface_overlay.mapper import load_road_data, style_dirt_road
+st.title("PavePath Routing Overlay")
 
+# New toggle input
+road_type = st.radio("Select road type to display:", ["Dirt Roads", "Paved Roads", "Both"])
 # Load road data
 road_data = load_road_data("data/roads.geojson")
 
