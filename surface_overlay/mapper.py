@@ -17,10 +17,6 @@ def filter_roads(roads_gdf, road_type):
 
 # Render roads as Pydeck layer
 def draw_roads_layer(filtered_roads_gdf, color=[200, 100, 50]):
-    if filtered_roads_gdf.empty:
-        return None
-
-    # Convert to GeoJSON if needed
     geojson_data = filtered_roads_gdf.__geo_interface__
 
     layer = pdk.Layer(
@@ -28,7 +24,10 @@ def draw_roads_layer(filtered_roads_gdf, color=[200, 100, 50]):
         data=geojson_data,
         get_line_color=color,
         get_line_width=4,
-        pickable=True
+        pickable=True,
+        auto_highlight=True,
+        get_tooltip="{'text': 'Road: {name}\\nSurface: {surface}'}"
     )
     return layer
+
 
