@@ -12,7 +12,19 @@ st.title("PavePath: Routing App with Dirt/Paved Road Toggle")
 road_type = st.radio("Select road type to display:", ["Dirt Roads", "Paved Roads", "Both"])
 
 # 📍 Load and filter roads
-roads_gdf = mapper.load_roads("data/roads.geojson")
+#roads_gdf = mapper.load_roads("data/roads.geojson")
+import geopandas as gpd
+from shapely.geometry import LineString
+
+# Dummy data to verify pipeline
+roads_gdf = gpd.GeoDataFrame({
+    "road_type": ["dirt", "paved"],
+    "geometry": [
+        LineString([(-122.42, 37.78), (-122.43, 37.79)]),
+        LineString([(-122.44, 37.78), (-122.45, 37.77)])
+    ]
+}, crs="EPSG:4326")
+
 filtered_roads = mapper.filter_roads(roads_gdf, road_type)
 
 
