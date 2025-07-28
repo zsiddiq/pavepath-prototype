@@ -13,8 +13,8 @@ roads_gdf = mapper.load_roads("data/roads.geojson")
 filtered_roads = mapper.filter_roads(roads_gdf, road_type)
 
 
-roads_gdf = load_roads_data()  # Load full GeoDataFrame
-filtered_roads = filter_roads(roads_gdf, road_type)  # Apply filter based on user input
+#roads_gdf = load_roads_data()  # Load full GeoDataFrame
+#filtered_roads = filter_roads(roads_gdf, road_type)  # Apply filter based on user input
 
 # ✅ Quick Win 1: Optional debug table
 if st.checkbox("Show road data table"):
