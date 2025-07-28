@@ -7,15 +7,15 @@ def load_roads(path="data/roads.geojson"):
     return gpd.read_file(path)
 
 # Define filters for road types
-def filter_roads(roads_gdf, road_type):
-    surface_column = roads_gdf["surface"].str.lower()
-
-    if road_type == "Dirt Roads":
-        return roads_gdf[surface_column == "unpaved"]
-    elif road_type == "Paved Roads":
-        return roads_gdf[surface_column == "paved"]
+def filter_roads(gdf, road_type):
+    surface_column = gdf["surface"].str.lower()
+    if road_type == "dirt":
+        return gdf[surface_column == "dirt"]
+    elif road_type == "paved":
+        return gdf[surface_column == "paved"]
     else:
-        return roads_gdf
+        return gdf
+
 
 
 
