@@ -4,7 +4,11 @@ import pydeck as pdk
 
 # Load roads GeoJSON once (adjust path if needed)
 def load_roads(path="data/roads.geojson"):
-    return gpd.read_file(path)
+    roads_gdf = gpd.read_file(path)        # Load the file first
+    print(roads_gdf.columns)               # Check available columns
+    print(roads_gdf.head())                # See sample rows
+    return roads_gdf                      # Return for use in rest of script
+
 
 # Define filters for road types
 def filter_roads(gdf, road_type):
