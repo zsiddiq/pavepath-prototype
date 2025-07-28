@@ -15,6 +15,13 @@ st.title("PavePath: Routing App with Dirt/Paved Road Toggle")
 # 🚦 Road Type Selector (UI)
 road_type_input = st.radio("Select road type to display:", ["Dirt Roads", "Paved Roads", "Both"])
 
+road_type_mapped = {
+    "Dirt Roads": "dirt",
+    "Paved Roads": "paved",
+    "Both": "both"
+}[road_type_input]
+
+
 # 🧠 Internal Mapping
 road_type_mapped = {
     "Dirt Roads": "dirt",
