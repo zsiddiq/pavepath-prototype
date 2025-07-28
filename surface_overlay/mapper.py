@@ -8,12 +8,15 @@ def load_roads(path="data/roads.geojson"):
 
 # Define filters for road types
 def filter_roads(roads_gdf, road_type):
+    surface_column = roads_gdf["surface"].str.lower()
+
     if road_type == "Dirt Roads":
-        return roads_gdf[roads_gdf["surface"].str.lower() == "dirt"]
+        return roads_gdf[surface_column == "unpaved"]
     elif road_type == "Paved Roads":
-        return roads_gdf[roads_gdf["surface"].str.lower() == "paved"]
+        return roads_gdf[surface_column == "paved"]
     else:
-        return roads_gdf  # return all
+        return roads_gdf
+
 
 # Render roads as Pydeck layer
 def draw_roads_layer(filtered_roads_gdf, color=[200, 100, 50]):
