@@ -30,14 +30,17 @@ road_type_mapped = {
 }[road_type_input]
 
 # 🧪 Dummy Data
-roads_gdf = gpd.GeoDataFrame({
-    "road_type": ["dirt", "paved"],
-    "surface": ["dirt", "paved"],  # ✅ lowercase values
-    "geometry": [
-        LineString([(-122.42, 37.78), (-122.43, 37.79)]),
-        LineString([(-122.44, 37.78), (-122.45, 37.77)])
-    ]
-}, crs="EPSG:4326")
+#roads_gdf = gpd.GeoDataFrame({
+#    "road_type": ["dirt", "paved"],
+#    "surface": ["dirt", "paved"],  # ✅ lowercase values
+#    "geometry": [
+#        LineString([(-122.42, 37.78), (-122.43, 37.79)]),
+#        LineString([(-122.44, 37.78), (-122.45, 37.77)])
+#    ]
+#}, crs="EPSG:4326")
+
+roads_gdf = mapper.load_roads("data/roads.geojson")
+
 
 # 🔍 Apply Filter
 filtered_roads = mapper.filter_roads(roads_gdf, road_type_mapped)
