@@ -19,6 +19,7 @@ from shapely.geometry import LineString
 # Dummy data to verify pipeline
 roads_gdf = gpd.GeoDataFrame({
     "road_type": ["dirt", "paved"],
+    "surface": ["dirt", "paved"],  # ✅ This is what filter_roads() needs
     "geometry": [
         LineString([(-122.42, 37.78), (-122.43, 37.79)]),
         LineString([(-122.44, 37.78), (-122.45, 37.77)])
