@@ -18,6 +18,7 @@ def filter_roads(roads_gdf, road_type):
         return roads_gdf
 
 
+
 # Render roads as Pydeck layer
 def draw_roads_layer(filtered_roads_gdf, color=[200, 100, 50]):
     geojson_data = filtered_roads_gdf.__geo_interface__
