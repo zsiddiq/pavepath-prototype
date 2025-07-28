@@ -26,7 +26,7 @@ def draw_roads_layer(filtered_roads_gdf, color=[200, 100, 50]):
         get_line_width=4,
         pickable=True,
         auto_highlight=True,
-        get_tooltip="{'text': 'Road: {name}\\nSurface: {surface}'}"
+        get_tooltip={'text': 'Road: {name}\\nSurface: {surface}'}
     )
     return layer
 
