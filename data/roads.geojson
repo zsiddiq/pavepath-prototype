@@ -1,1 +1,22 @@
-roads_gdf = gpd.read_file("roads.geojson")
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "surface": "dirt", "name": "Farm Trail" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-117.189, 33.832], [-117.190, 33.833]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "surface": "paved", "name": "Orchard Ave" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-117.191, 33.834], [-117.192, 33.835]]
+      }
+    }
+  ]
+}
+
