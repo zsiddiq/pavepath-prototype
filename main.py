@@ -12,7 +12,21 @@ road_type = st.radio("Select road type to display:", ["Dirt Roads", "Paved Roads
 roads_gdf = mapper.load_roads("data/roads.geojson")
 filtered_roads = mapper.filter_roads(roads_gdf, road_type)
 
-st.write(filtered_roads)  # 👈 See what you've got post-filter
+
+roads_gdf = load_roads_data()  # Load full GeoDataFrame
+filtered_roads = filter_roads(roads_gdf, road_type)  # Apply filter based on user input
+
+# ✅ Quick Win 1: Optional debug table
+if st.checkbox("Show road data table"):
+    st.write(filtered_roads)
+
+# ✅ Quick Win 2: Surface type breakdown (optional insights)
+if st.checkbox("Show surface type breakdown"):
+    st.write(roads_gdf["surface"].value_counts())
+
+# ✅ Quick Win 3: Fallback message
+if filtered_roads.empty:
+    st.warning("No roads match the selected type. Try a different filter.")
 
 # 🗺️ Draw map layer
 road_layer = mapper.draw_roads_layer(filtered_roads)
