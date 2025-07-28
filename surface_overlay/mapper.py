@@ -50,3 +50,5 @@ def draw_roads_layer(filtered_roads_gdf, color=[200, 100, 50]):
         get_tooltip={'text': 'Road: {name}\\nSurface: {surface}'}
     )
     return layer
+if __name__ == "__main__":
+    render_folium_map("both")  # or use a parameter like "simple", "route", etc.
