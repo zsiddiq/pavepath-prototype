@@ -12,6 +12,8 @@ road_type = st.radio("Select road type to display:", ["Dirt Roads", "Paved Roads
 roads_gdf = mapper.load_roads("data/roads.geojson")
 filtered_roads = mapper.filter_roads(roads_gdf, road_type)
 
+st.write(filtered_roads)  # 👈 See what you've got post-filter
+
 # 🗺️ Draw map layer
 road_layer = mapper.draw_roads_layer(filtered_roads)
 
