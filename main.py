@@ -2,7 +2,8 @@ import streamlit as st
 import pydeck as pdk
 from surface_overlay import mapper
 st.write("Full secrets:", st.secrets)
-MAPBOX_TOKEN = st.secrets["mapbox"]["token"]
+#MAPBOX_TOKEN = st.secrets["mapbox"]["token"]
+MAPBOX_TOKEN = st.secrets["api_keys"]["mapbox"]
 
 st.set_page_config(page_title="PavePath Routing Overlay", layout="wide")
 st.title("PavePath: Routing App with Dirt/Paved Road Toggle")
