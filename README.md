@@ -53,4 +53,19 @@ Project Structure:
 └── requirements.txt
 
 
+sequenceDiagram
+    participant User
+    participant Frontend UI (Streamlit/Folium)
+    participant Routing Service (Python microservice)
+    participant Mapping API (e.g., OpenStreetMap, Mapbox)
+    participant Data Store (optional)
+
+    User->>Frontend UI: Enter location and routing query
+    Frontend UI->>Routing Service: Submit request for route and map data
+    Routing Service->>Mapping API: Fetch base map and route geometry
+    Routing Service->>Data Store: (Optional) Log request or enrich with metadata
+    Mapping API-->>Routing Service: Return raw map/route data
+    Routing Service-->>Frontend UI: Send enriched map object
+    Frontend UI-->>User: Display interactive map or download link
+
 
