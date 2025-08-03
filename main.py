@@ -22,11 +22,43 @@ API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 # This is the endpoint we will send our requests to.
 BASE_URL = "https://maps.googleapis.com/maps/api/directions/json"
 
+# A list of keywords we'll use to search for unpaved roads.
+# We'll check the route instructions for these phrases.
+UNPAVED_KEYWORDS = ["unpaved", "dirt road", "gravel road", "fire road", "dirt track"]
+
+
+# --- Core Logic Function ---
+def check_for_dirt_roads(route_steps):
+    """
+    Checks a list of route steps for keywords that might indicate
+    the presence of an unpaved road.
+
+    Args:
+        route_steps (list): A list of step dictionaries from the Directions API response.
+
+    Returns:
+        bool: True if a keyword is found, False otherwise.
+    """
+    # Iterate through each step in the route.
+    for step in route_steps:
+        # Get the HTML instructions and convert to lowercase for case-insensitive matching.
+        instructions = step["html_instructions"].lower()
+        
+        # Check if any of our keywords are present in the instructions.
+        for keyword in UNPAVED_KEYWORDS:
+            if keyword in instructions:
+                # If a keyword is found, we can immediately return True.
+                return True
+                
+    # If the loop completes without finding any keywords, no dirt roads were detected.
+    return False
+
+
 # --- Main Function ---
 def get_route_and_details(origin, destination):
     """
-    Makes a request to the Google Directions API to find a route
-    between an origin and a destination, and prints basic details.
+    Makes a request to the Google Directions API, and checks if the route
+    includes any likely dirt roads.
 
     Args:
         origin (str): The starting point of the journey.
@@ -38,68 +70,62 @@ def get_route_and_details(origin, destination):
         return
 
     # Define the parameters for the API request.
-    # We pass the origin, destination, and our API key.
     params = {
         "origin": origin,
         "destination": destination,
-        "key": API_KEY
+        "key": API_KEY,
+        "alternatives": "true" # Request alternative routes for a future step
     }
 
     try:
         # Make the GET request to the Directions API.
-        # `requests.get()` sends the request and returns a response object.
         response = requests.get(BASE_URL, params=params)
 
-        # Raise an exception for bad status codes (e.g., 404, 500).
+        # Raise an exception for bad status codes.
         response.raise_for_status()
 
-        # Parse the JSON response from the API into a Python dictionary.
+        # Parse the JSON response.
         route_data = response.json()
 
-        # Check the status of the response. "OK" means the request was successful.
         if route_data["status"] == "OK":
             # Extract the first route found in the response.
-            # The API can return multiple routes, but we'll focus on the first one for now.
             route = route_data["routes"][0]
-            
-            # Extract the first leg of the route.
-            # A "leg" is the journey between a starting point and a destination.
             leg = route["legs"][0]
 
-            # Print some of the key information from the route.
-            # `leg["distance"]["text"]` provides the total distance in a human-readable format.
             print(f"Route from {leg['start_address']} to {leg['end_address']}:")
             print(f"Total Distance: {leg['distance']['text']}")
             print(f"Total Duration: {leg['duration']['text']}")
             print("\n")
             print("--- Route Steps ---")
             
-            # Iterate through each step of the leg and print the driving instructions.
-            # The HTML instructions need to be cleaned up for a cleaner display.
+            # Check for dirt roads using our new function.
+            has_dirt_roads = check_for_dirt_roads(leg["steps"])
+            
+            # If dirt roads are detected, display an alert.
+            if has_dirt_roads:
+                print("🚨  ALERT! Your route may include unpaved or dirt roads.  🚨")
+                print("---------------------------------------------------------------")
+            
+            # Iterate through each step and print the instructions.
             for step in leg["steps"]:
-                # The 'html_instructions' often contains HTML tags. We can remove them
-                # or just print the raw text for this initial version.
                 print(f"- {step['html_instructions'].replace('<b>', '').replace('</b>', '')}")
 
         else:
-            # If the status is not "OK", something went wrong with the API call.
-            # Print the error message provided by the API.
+            # If the status is not "OK", print the API error message.
             print(f"Error: API status is '{route_data['status']}'. Message: {route_data.get('error_message', 'No error message provided.')}")
 
     except requests.exceptions.RequestException as e:
-        # Catch any errors that occur during the request (e.g., network issues).
         print(f"A network error occurred: {e}")
     except KeyError:
-        # Catch errors if the JSON response structure is unexpected.
         print("Error: Failed to parse the API response. The structure may have changed.")
     except Exception as e:
-        # Catch any other unexpected errors.
         print(f"An unexpected error occurred: {e}")
 
+
 # --- Example Usage ---
-# Call our function with a sample origin and destination.
-# For testing, you can use any valid addresses or place names.
 if __name__ == "__main__":
-    origin_address = "Golden Gate Bridge, San Francisco, CA"
-    destination_address = "Stinson Beach, CA"
+    # Test with a route that likely contains an unpaved road.
+    origin_address = "29402 Pacific Coast Hwy, Malibu, CA"
+    destination_address = "Mishe Mokwa Trailhead, CA"
     get_route_and_details(origin_address, destination_address)
+
