@@ -1,131 +1,75 @@
-# pavepath/main.py
+import streamlit as st
+import pydeck as pdk
+import geopandas as gpd
+from shapely.geometry import LineString
+from surface_overlay import mapper
 
-# A critical first step: Always import the necessary libraries.
-# `requests` will be used to make HTTP requests to the Google Maps API.
-# `os` will be used to interact with the operating system, specifically to get our API key.
-# `dotenv` helps us load environment variables from a .env file securely.
-import requests
-import os
-from dotenv import load_dotenv
+# 🔐 Secrets
+st.write("Full secrets:", st.secrets)
+MAPBOX_TOKEN = st.secrets["api_keys"]["mapbox"]
 
-# Load environment variables from the .env file.
-# This makes sure our API key is not hardcoded in the script.
-load_dotenv()
+# 🖼️ Page Setup
+st.set_page_config(page_title="PavePath Routing Overlay", layout="wide")
+st.title("PavePath: Routing App with Dirt/Paved Road Toggle")
 
-# --- Configuration ---
-# Get the Google Maps API key from the environment variables.
-# The `os.getenv()` method retrieves the value of the environment variable.
-# We'll expect the .env file to contain a line like: GOOGLE_MAPS_API_KEY="your_api_key_here"
-API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+# 🚦 Road Type Selector (UI)
+road_type_input = st.radio("Select road type to display:", ["Dirt Roads", "Paved Roads", "Both"])
 
-# Define the base URL for the Google Directions API.
-# This is the endpoint we will send our requests to.
-BASE_URL = "https://maps.googleapis.com/maps/api/directions/json"
-
-# A list of keywords we'll use to search for unpaved roads.
-# We'll check the route instructions for these phrases.
-UNPAVED_KEYWORDS = ["unpaved", "dirt road", "gravel road", "fire road", "dirt track"]
+road_type_mapped = {
+    "Dirt Roads": "dirt",
+    "Paved Roads": "paved",
+    "Both": "both"
+}[road_type_input]
 
 
-# --- Core Logic Function ---
-def check_for_dirt_roads(route_steps):
-    """
-    Checks a list of route steps for keywords that might indicate
-    the presence of an unpaved road.
+# 🧠 Internal Mapping
+road_type_mapped = {
+    "Dirt Roads": "dirt",
+    "Paved Roads": "paved",
+    "Both": "both"
+}[road_type_input]
 
-    Args:
-        route_steps (list): A list of step dictionaries from the Directions API response.
+# 🧪 Dummy Data
+#roads_gdf = gpd.GeoDataFrame({
+#    "road_type": ["dirt", "paved"],
+#    "surface": ["dirt", "paved"],  # ✅ lowercase values
+#    "geometry": [
+#        LineString([(-122.42, 37.78), (-122.43, 37.79)]),
+#        LineString([(-122.44, 37.78), (-122.45, 37.77)])
+#    ]
+#}, crs="EPSG:4326")
 
-    Returns:
-        bool: True if a keyword is found, False otherwise.
-    """
-    # Iterate through each step in the route.
-    for step in route_steps:
-        # Get the HTML instructions and convert to lowercase for case-insensitive matching.
-        instructions = step["html_instructions"].lower()
-        
-        # Check if any of our keywords are present in the instructions.
-        for keyword in UNPAVED_KEYWORDS:
-            if keyword in instructions:
-                # If a keyword is found, we can immediately return True.
-                return True
-                
-    # If the loop completes without finding any keywords, no dirt roads were detected.
-    return False
+roads_gdf = mapper.load_roads("data/roads.geojson")
 
 
-# --- Main Function ---
-def get_route_and_details(origin, destination):
-    """
-    Makes a request to the Google Directions API, and checks if the route
-    includes any likely dirt roads.
+# 🔍 Apply Filter
+filtered_roads = mapper.filter_roads(roads_gdf, road_type_mapped)
 
-    Args:
-        origin (str): The starting point of the journey.
-        destination (str): The final destination of the journey.
-    """
-    # Check if the API key was loaded successfully.
-    if not API_KEY:
-        print("Error: GOOGLE_MAPS_API_KEY not found. Please set it in your .env file.")
-        return
+# 🧰 Debugging + UI Feedback
+if st.checkbox("Show road data table"):
+    st.write(filtered_roads)
 
-    # Define the parameters for the API request.
-    params = {
-        "origin": origin,
-        "destination": destination,
-        "key": API_KEY,
-        "alternatives": "true" # Request alternative routes for a future step
-    }
+if st.checkbox("Show surface type breakdown"):
+    st.write(roads_gdf["surface"].value_counts())
 
-    try:
-        # Make the GET request to the Directions API.
-        response = requests.get(BASE_URL, params=params)
+if filtered_roads.empty:
+    st.warning("No roads match the selected type. Try a different filter.")
 
-        # Raise an exception for bad status codes.
-        response.raise_for_status()
+# 🗺️ Map Rendering
+road_layer = mapper.draw_roads_layer(filtered_roads)
 
-        # Parse the JSON response.
-        route_data = response.json()
+view_state = pdk.ViewState(
+    latitude=33.8,  # Perris, CA
+    longitude=-117.2,
+    zoom=11,
+    pitch=0
+)
 
-        if route_data["status"] == "OK":
-            # Extract the first route found in the response.
-            route = route_data["routes"][0]
-            leg = route["legs"][0]
-
-            print(f"Route from {leg['start_address']} to {leg['end_address']}:")
-            print(f"Total Distance: {leg['distance']['text']}")
-            print(f"Total Duration: {leg['duration']['text']}")
-            print("\n")
-            print("--- Route Steps ---")
-            
-            # Check for dirt roads using our new function.
-            has_dirt_roads = check_for_dirt_roads(leg["steps"])
-            
-            # If dirt roads are detected, display an alert.
-            if has_dirt_roads:
-                print("🚨  ALERT! Your route may include unpaved or dirt roads.  🚨")
-                print("---------------------------------------------------------------")
-            
-            # Iterate through each step and print the instructions.
-            for step in leg["steps"]:
-                print(f"- {step['html_instructions'].replace('<b>', '').replace('</b>', '')}")
-
-        else:
-            # If the status is not "OK", print the API error message.
-            print(f"Error: API status is '{route_data['status']}'. Message: {route_data.get('error_message', 'No error message provided.')}")
-
-    except requests.exceptions.RequestException as e:
-        print(f"A network error occurred: {e}")
-    except KeyError:
-        print("Error: Failed to parse the API response. The structure may have changed.")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-
-
-# --- Example Usage ---
-if __name__ == "__main__":
-    # Test with a route that likely contains an unpaved road.
-    origin_address = "29402 Pacific Coast Hwy, Malibu, CA"
-    destination_address = "Mishe Mokwa Trailhead, CA"
-    get_route_and_details(origin_address, destination_address)
-
+if road_layer:
+    st.pydeck_chart(pdk.Deck(
+        map_style="mapbox://styles/mapbox/light-v9",
+        initial_view_state=view_state,
+        layers=[road_layer]
+    ))
+else:
+    st.warning("No roads to display for selected type.")
