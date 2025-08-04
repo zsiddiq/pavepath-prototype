@@ -95,4 +95,37 @@ Interested in licensing PavePath or deploying it for your organization?
 
 📧 Email: admin@zgoal.com 🌐 Website: www.zgoal.com
 
+Supported Input Formats
+Our route optimization system accepts three types of input formats for location data:
 
+1. Coordinates (Latitude/Longitude)
+Format: List of tuples or objects containing latitude and longitude
+
+Example:
+
+python
+[(33.8121, -117.9190), (34.0522, -118.2437)]
+✅ Recommended for GPS-based systems and precision routing
+
+2. Addresses
+Format: List of strings representing physical addresses
+
+Example:
+
+python
+["123 Main St, Menifee, CA", "456 Elm St, Los Angeles, CA"]
+🔄 Requires geocoding to convert to coordinates before routing
+
+3. Grid IDs
+Format: List of custom grid identifiers used in internal mapping systems
+
+Example:
+
+python
+["A1", "B3", "C7"]
+🗺️ Useful for drone delivery zones, warehouse layouts, or predefined map sectors
+
+🔍 Input Validation Rules
+Coordinates must be valid floats within latitude/longitude bounds
+
+Addresses must be non-empty strings; geocoding errors will be flagged
