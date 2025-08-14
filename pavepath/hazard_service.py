@@ -25,3 +25,30 @@ def score_segment(hazards: Dict[str, float]) -> float:
 
     score = sum(hazards[h] * weights.get(h, 0) for h in hazards)
     return round(score, 2)
+def analyze_route(route_hazards: list) -> dict:
+    """
+    Analyzes a route composed of multiple segments with hazard data.
+    
+    Args:
+        route_hazards (list): A list of dictionaries, each representing hazard data for a segment.
+    
+    Returns:
+        dict: Contains scores per segment, average score, and highest-risk segment info.
+    """
+    segment_scores = []
+    for i, hazards in enumerate(route_hazards):
+        score = score_segment(hazards)
+        segment_scores.append({
+            'segment': i,
+            'score': score,
+            'hazards': hazards
+        })
+
+    average_score = round(sum(s['score'] for s in segment_scores) / len(segment_scores), 2)
+    highest_risk = max(segment_scores, key=lambda s: s['score'])
+
+    return {
+        'segment_scores': segment_scores,
+        'average_score': average_score,
+        'highest_risk_segment': highest_risk
+    }
