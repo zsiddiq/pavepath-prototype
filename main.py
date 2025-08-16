@@ -61,6 +61,12 @@ route_data = [generate_random_hazards() for _ in range(len(filtered_roads))]
 # ⚠️ Analyze Hazards with Custom Threshold
 result = analyze_route(route_data, risk_threshold=risk_threshold)
 
+# 🎨 Inject hazard scores into filtered_roads for map coloring
+scores = [s['score'] for s in result['segment_scores']]
+filtered_roads = filtered_roads.copy()
+filtered_roads['hazard_score'] = scores
+
+
 # 📊 Show Hazard Scores
 if st.checkbox("Show hazard scores"):
     st.write(result)
