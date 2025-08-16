@@ -4,6 +4,10 @@ import geopandas as gpd
 from shapely.geometry import LineString
 from surface_overlay import mapper
 
+# 🧠 Hazard Analysis Imports
+from pavepath.hazard_service import analyze_route
+from pavepath.visualizer import visualize_route_scores
+
 # 🔐 Secrets
 st.write("Full secrets:", st.secrets)
 MAPBOX_TOKEN = st.secrets["api_keys"]["mapbox"]
@@ -21,26 +25,8 @@ road_type_mapped = {
     "Both": "both"
 }[road_type_input]
 
-
-# 🧠 Internal Mapping
-road_type_mapped = {
-    "Dirt Roads": "dirt",
-    "Paved Roads": "paved",
-    "Both": "both"
-}[road_type_input]
-
-# 🧪 Dummy Data
-#roads_gdf = gpd.GeoDataFrame({
-#    "road_type": ["dirt", "paved"],
-#    "surface": ["dirt", "paved"],  # ✅ lowercase values
-#    "geometry": [
-#        LineString([(-122.42, 37.78), (-122.43, 37.79)]),
-#        LineString([(-122.44, 37.78), (-122.45, 37.77)])
-#    ]
-#}, crs="EPSG:4326")
-
+# 🗂️ Load Road Data
 roads_gdf = mapper.load_roads("data/roads.geojson")
-
 
 # 🔍 Apply Filter
 filtered_roads = mapper.filter_roads(roads_gdf, road_type_mapped)
@@ -54,6 +40,20 @@ if st.checkbox("Show surface type breakdown"):
 
 if filtered_roads.empty:
     st.warning("No roads match the selected type. Try a different filter.")
+
+# ⚠️ Hazard Scoring Integration
+route_data = [
+    {"weather": 4.0, "road_condition": 6.0, "traffic": 5.0, "crime": 3.0, "natural_disaster": 2.0}
+    for _ in range(len(filtered_roads))
+]
+
+result = analyze_route(route_data)
+
+if st.checkbox("Show hazard scores"):
+    st.write(result)
+
+if st.checkbox("Visualize hazard scores"):
+    visualize_route_scores(result["segment_scores"])
 
 # 🗺️ Map Rendering
 road_layer = mapper.draw_roads_layer(filtered_roads)
