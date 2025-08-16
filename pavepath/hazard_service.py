@@ -35,9 +35,16 @@ def analyze_route(route_hazards: list) -> dict:
     Returns:
         dict: Contains scores per segment, average score, and highest-risk segment info.
     """
+    RISK_THRESHOLD = 6.0  # ← Add this at the top of the function
+
     segment_scores = []
     for i, hazards in enumerate(route_hazards):
         score = score_segment(hazards)
+        
+        # 🚨 Upgrade 1: Risk Alert
+        if score > RISK_THRESHOLD:
+            print(f"⚠️ Warning: Segment {i} has a high hazard score of {score}")
+        
         segment_scores.append({
             'segment': i,
             'score': score,
