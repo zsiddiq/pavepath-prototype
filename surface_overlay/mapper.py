@@ -37,18 +37,33 @@ def render_folium_map(surface_type="both"):
     add_roads_to_map(fmap, filtered)
     fmap.save("map.html")
 
-# --- Pydeck Layer Rendering ---
-def draw_roads_layer(filtered_roads_gdf, color=[200, 100, 50]):
-    geojson_data = filtered_roads_gdf.__geo_interface__
+# --- Pydeck Layer Rendering with Hazard Coloring ---
+def draw_roads_layer(filtered_roads_gdf):
+    if filtered_roads_gdf.empty:
+        return None
+
     layer = pdk.Layer(
         "GeoJsonLayer",
-        data=geojson_data,
-        get_line_color=color,
+        data=filtered_roads_gdf.__geo_interface__,
+        get_line_color="""
+            d => {
+                const score = d.properties.hazard_score || 0;
+                return [
+                    Math.min(255, Math.round(255 * (score / 10))),       // Red intensity
+                    Math.min(255, Math.round(255 * (1 - score / 10))),   // Green intensity
+                    0                                                    // Blue fixed
+                ];
+            }
+        """,
         get_line_width=4,
         pickable=True,
         auto_highlight=True,
-        get_tooltip={'text': 'Road: {name}\\nSurface: {surface}'}
+        get_tooltip={
+            'text': 'Surface: {surface}\nHazard Score: {hazard_score}'
+        }
     )
     return layer
+
+# --- Optional CLI Entry Point ---
 if __name__ == "__main__":
-    render_folium_map("both")  # or use a parameter like "simple", "route", etc.
+    render_folium_map("both")
