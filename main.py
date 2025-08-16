@@ -7,6 +7,8 @@ from surface_overlay import mapper
 # 🧠 Hazard Analysis Imports
 from pavepath.hazard_service import analyze_route
 from pavepath.visualizer import visualize_route_scores
+import random
+import pandas as pd
 
 # 🔐 Secrets
 st.write("Full secrets:", st.secrets)
@@ -41,9 +43,10 @@ if st.checkbox("Show surface type breakdown"):
 if filtered_roads.empty:
     st.warning("No roads match the selected type. Try a different filter.")
 
-# ⚠️ Hazard Scoring Integration
-import random
+# 🎚️ User-defined risk threshold
+risk_threshold = st.slider("Set risk threshold", min_value=0.0, max_value=10.0, value=6.0, step=0.5)
 
+# 🧪 Generate Random Hazard Data
 def generate_random_hazards():
     return {
         "weather": round(random.uniform(0, 10), 1),
@@ -55,14 +58,33 @@ def generate_random_hazards():
 
 route_data = [generate_random_hazards() for _ in range(len(filtered_roads))]
 
+# ⚠️ Analyze Hazards with Custom Threshold
+result = analyze_route(route_data, risk_threshold=risk_threshold)
 
-result = analyze_route(route_data)
-
+# 📊 Show Hazard Scores
 if st.checkbox("Show hazard scores"):
     st.write(result)
 
+# 📈 Visualize Hazard Scores
 if st.checkbox("Visualize hazard scores"):
     visualize_route_scores(result["segment_scores"])
+
+# 🔍 Segment-Level Hazard Breakdown
+if st.checkbox("Show segment-level hazard breakdown"):
+    for segment in result["segment_scores"]:
+        st.markdown(f"**Segment {segment['segment']}**")
+        st.write(segment["hazards"])
+
+# 📥 Download Hazard Report
+if st.checkbox("Download hazard analysis as CSV"):
+    df = pd.DataFrame(result["segment_scores"])
+    csv = df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="Download Hazard Report",
+        data=csv,
+        file_name="hazard_analysis.csv",
+        mime="text/csv"
+    )
 
 # 🗺️ Map Rendering
 road_layer = mapper.draw_roads_layer(filtered_roads)
