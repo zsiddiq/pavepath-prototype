@@ -42,10 +42,19 @@ if filtered_roads.empty:
     st.warning("No roads match the selected type. Try a different filter.")
 
 # ⚠️ Hazard Scoring Integration
-route_data = [
-    {"weather": 4.0, "road_condition": 6.0, "traffic": 5.0, "crime": 3.0, "natural_disaster": 2.0}
-    for _ in range(len(filtered_roads))
-]
+import random
+
+def generate_random_hazards():
+    return {
+        "weather": round(random.uniform(0, 10), 1),
+        "road_condition": round(random.uniform(0, 10), 1),
+        "traffic": round(random.uniform(0, 10), 1),
+        "crime": round(random.uniform(0, 10), 1),
+        "natural_disaster": round(random.uniform(0, 10), 1)
+    }
+
+route_data = [generate_random_hazards() for _ in range(len(filtered_roads))]
+
 
 result = analyze_route(route_data)
 
