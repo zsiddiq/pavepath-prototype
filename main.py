@@ -3,12 +3,11 @@ import pydeck as pdk
 import geopandas as gpd
 from shapely.geometry import LineString
 from surface_overlay import mapper
-
-# 🧠 Hazard Analysis Imports
 from pavepath.hazard_service import analyze_route
 from pavepath.visualizer import visualize_route_scores
 import random
 import pandas as pd
+import streamlit.components.v1 as components
 
 # 🔐 Secrets
 st.write("Full secrets:", st.secrets)
@@ -66,7 +65,6 @@ scores = [s['score'] for s in result['segment_scores']]
 filtered_roads = filtered_roads.copy()
 filtered_roads['hazard_score'] = scores
 
-
 # 📊 Show Hazard Scores
 if st.checkbox("Show hazard scores"):
     st.write(result)
@@ -92,21 +90,8 @@ if st.checkbox("Download hazard analysis as CSV"):
         mime="text/csv"
     )
 
-# 🗺️ Map Rendering
-road_layer = mapper.draw_roads_layer(filtered_roads)
-
-view_state = pdk.ViewState(
-    latitude=33.8,  # Perris, CA
-    longitude=-117.2,
-    zoom=11,
-    pitch=0
-)
-
-if road_layer:
-    st.pydeck_chart(pdk.Deck(
-        map_style="mapbox://styles/mapbox/light-v9",
-        initial_view_state=view_state,
-        layers=[road_layer]
-    ))
-else:
-    st.warning("No roads to display for selected type.")
+# 🌐 Google Maps Embed
+if st.checkbox("Show Google Maps version"):
+    with open("static/map_embed.html", "r") as f:
+        html_code = f.read()
+    components.html(html_code, height=600)
