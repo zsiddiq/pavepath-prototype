@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PavePath Hazard Map</title>
+    <style>
+      #map { height: 100vh; width: 100%; }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script>
+      function initMap() {
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 33.8, lng: -117.2 },
+          zoom: 12,
+        });
+
+        const routeSegments = [
+          {
+            path: [{ lat: 33.8, lng: -117.2 }, { lat: 33.81, lng: -117.21 }],
+            score: 3.2
+          },
+          {
+            path: [{ lat: 33.81, lng: -117.21 }, { lat: 33.82, lng: -117.22 }],
+            score: 7.5
+          }
+        ];
+
+        routeSegments.forEach(segment => {
+          const color = segment.score > 6 ? "#FF0000" : "#00FF00";
+          new google.maps.Polyline({
+            path: segment.path,
+            strokeColor: color,
+            strokeWeight: 5,
+            map: map
+          });
+
+          const infoWindow = new google.maps.InfoWindow();
+          segment.path.forEach(coord => {
+            const marker = new google.maps.Marker({
+              position: coord,
+              map: map,
+              icon: { path: google.maps.SymbolPath.CIRCLE, scale: 4 }
+            });
+
+            marker.addListener("click", () => {
+              infoWindow.setContent(`Hazard Score: ${segment.score}`);
+              infoWindow.open(map, marker);
+            });
+          });
+        });
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+  </body>
+</html>
