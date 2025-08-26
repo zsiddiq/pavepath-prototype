@@ -4,14 +4,23 @@ from pavepath.route_optimizer import optimize_route
 from pavepath.visualizer import render_route_map
 
 sample_locations = [
-    (33.8121, -117.9190),
-    (34.0522, -118.2437),
-    (33.7701, -118.1937),
-    (33.8358, -117.9143),
+    (33.8121, -117.9190),  # Anaheim
+    (34.0522, -118.2437),  # Los Angeles
+    (33.7701, -118.1937),  # Long Beach
+    (33.8358, -117.9143),  # Santa Ana
 ]
 
 st.title("PavePath: Hazard-Aware Route Viewer")
 
+# Initialize session state
+if "route_data" not in st.session_state:
+    st.session_state.route_data = None
+
+# Button to generate route
 if st.button("Generate Route"):
-    route_data = optimize_route(sample_locations, mode="safe")
-    st_folium(render_route_map(route_data), width=700, height=500)
+    st.session_state.route_data = optimize_route(sample_locations, mode="safe")
+
+# Display map if route exists
+if st.session_state.route_data:
+    st_folium(render_route_map(st.session_state.route_data), width=700, height=500)
+
