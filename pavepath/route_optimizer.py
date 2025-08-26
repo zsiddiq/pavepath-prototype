@@ -1,5 +1,6 @@
 import math
-from hazard_service import simulate_hazards_for_segment, score_segment
+from pavepath.hazard_service import simulate_hazards_for_segment, score_segment
+
 
 # Tunable weights for composite cost function
 HAZARD_WEIGHT = 0.7
