@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_folium import st_folium
-from route_optimizer import optimize_route
+from pavepath.route_optimizer import optimize_route
 from visualizer import render_route_map
 
 # Sample input — replace with dynamic input later
