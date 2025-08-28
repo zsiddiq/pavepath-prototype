@@ -1,5 +1,6 @@
 import math
 import openrouteservice
+import streamlit as st
 from hazard_service import simulate_hazards_for_segment, score_segment
 
 # Tunable weights for composite cost function
@@ -7,7 +8,7 @@ HAZARD_WEIGHT = 0.7
 DISTANCE_WEIGHT = 0.3
 
 # ORS API key (replace with your actual key or use st.secrets if deployed)
-import streamlit as st
+
 ORS_API_KEY = st.secrets["api_keys"]["ors"]
 
 
