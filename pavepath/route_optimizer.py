@@ -1,12 +1,12 @@
 import math
 import openrouteservice
-from pavepath.hazard_service import simulate_hazards_for_segment, score_segment
+from hazard_service import simulate_hazards_for_segment, score_segment
 
 # Tunable weights for composite cost function
 HAZARD_WEIGHT = 0.7
 DISTANCE_WEIGHT = 0.3
 
-# ORS API key (replace with your actual key)
+# ORS API key (replace with your actual key or use st.secrets if deployed)
 ORS_API_KEY = "your-api-key-here"
 
 def haversine(coord1, coord2):
@@ -30,7 +30,7 @@ def compute_segment_cost(start, end, mode="safe"):
 
     if mode == "safe":
         cost = hazard_score * HAZARD_WEIGHT + distance_km * DISTANCE_WEIGHT
-    else:  # mode == "fast"
+    else:
         cost = distance_km
 
     return round(cost, 2), hazard_score, distance_km
@@ -43,16 +43,19 @@ def get_driving_segments(origin, destination):
         format='geojson'
     )
     geometry = response['features'][0]['geometry']['coordinates']
+
+    # Flip (lon, lat) → (lat, lon) for consistency
     segments = [
-        {"from": tuple(geometry[i]), "to": tuple(geometry[i+1])}
-        for i in range(len(geometry) - 1)
+        {"from": (coord[1], coord[0]), "to": (geometry[i+1][1], geometry[i+1][0])}
+        for i, coord in enumerate(geometry[:-1])
     ]
     return segments
 
 def optimize_route(locations, mode="safe"):
     """
-    Optimizes route using composite cost (hazard + distance).
     Supports 'safe', 'fast', and 'driving' modes.
+    - 'driving' uses ORS for real road segments
+    - others use greedy nearest-neighbor with haversine
     """
     if not locations or len(locations) < 2:
         return {"segments": [], "mode": mode}
