@@ -40,3 +40,8 @@ if st.session_state.route_data:
     if high_risk:
         st.warning(f"{len(high_risk)} segment(s) flagged as high-risk.")
 
+     # 🔍 Segment-Level Debug View
+    with st.expander("Segment-Level Hazard Scores"):
+        for i, seg in enumerate(segments):
+            score = round(seg.get("hazard_score", 0), 2)
+            st.write(f"Segment {i+1}: {seg.get('start')} → {seg.get('end')} | Score: {score}")
