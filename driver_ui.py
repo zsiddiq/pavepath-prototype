@@ -21,7 +21,7 @@ if submitted:
         origin_coords = tuple(map(float, origin.split(",")))
         destination_coords = tuple(map(float, destination.split(",")))
         locations = [origin_coords, destination_coords]
-        st.session_state.route_data = optimize_route(locations, mode="safe")
+        st.session_state.route_data = optimize_route(locations, mode="driving")
     except:
         st.error("Invalid coordinates. Please enter as lat, lon")
 
