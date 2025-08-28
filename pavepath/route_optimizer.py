@@ -82,6 +82,7 @@ def optimize_route(locations, mode="safe"):
                 "distance_km": round(distance_km, 2),
                 "composite_cost": cost
             })
+            print(f"Segment: {seg['from']} → {seg['to']} | Score: {seg['hazard_score']}")
             segment_details.append(seg)
         return {
             "optimized_route": [origin, destination],
