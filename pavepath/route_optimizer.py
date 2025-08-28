@@ -7,7 +7,9 @@ HAZARD_WEIGHT = 0.7
 DISTANCE_WEIGHT = 0.3
 
 # ORS API key (replace with your actual key or use st.secrets if deployed)
-ORS_API_KEY = "your-api-key-here"
+import streamlit as st
+ORS_API_KEY = st.secrets["api_keys"]["ors"]
+
 
 def haversine(coord1, coord2):
     lat1, lon1 = coord1
