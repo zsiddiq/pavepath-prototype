@@ -41,19 +41,26 @@ def compute_segment_cost(start, end, mode="safe"):
 
 def get_driving_segments(origin, destination):
     client = openrouteservice.Client(key=ORS_API_KEY)
+
+    # Flip to (lon, lat) for ORS
+    origin_coords = (origin[1], origin[0])
+    destination_coords = (destination[1], destination[0])
+
     response = client.directions(
-        coordinates=[origin, destination],
+        coordinates=[origin_coords, destination_coords],
         profile='driving-car',
         format='geojson'
     )
+
     geometry = response['features'][0]['geometry']['coordinates']
 
-    # Flip (lon, lat) → (lat, lon) for consistency
+    # Flip back to (lat, lon) for scoring and display
     segments = [
         {"from": (coord[1], coord[0]), "to": (geometry[i+1][1], geometry[i+1][0])}
         for i, coord in enumerate(geometry[:-1])
     ]
     return segments
+
 
 def optimize_route(locations, mode="safe"):
     """
