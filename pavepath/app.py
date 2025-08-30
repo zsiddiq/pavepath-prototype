@@ -1,27 +1,38 @@
 import streamlit as st
-from routing.google_maps import fetch_route
-from routing.hazard_scoring import generate_hazard_scores
-from routing.annotate import annotate_route_with_hazards
-from utils.polyline_tools import decode_polyline
-from utils.color_map import score_to_color
+from route_optimizer import optimize_route
 import folium
 from streamlit_folium import folium_static
 
-st.title("PavePath Hazard Overlay")
+st.set_page_config(page_title="PavePath Hazard Routing", layout="wide")
+st.title("🚧 PavePath Hazard-Aware Routing")
 
-start = st.text_input("Start Location", "Redlands, CA")
-end = st.text_input("End Location", "Ontario, CA")
-api_key = st.secrets["GOOGLE_MAPS_API_KEY"]
+# Input fields
+start_lat = st.number_input("Start Latitude", value=33.680984)
+start_lon = st.number_input("Start Longitude", value=-117.170700)
+end_lat = st.number_input("End Latitude", value=33.835293)
+end_lon = st.number_input("End Longitude", value=-117.914505)
+
+locations = [(start_lat, start_lon), (end_lat, end_lon)]
 
 if st.button("Generate Route"):
-    steps = fetch_route(start, end, api_key)
-    hazard_scores = generate_hazard_scores(steps)
-    annotated = annotate_route_with_hazards(steps, hazard_scores)
+    result = optimize_route(locations, mode="driving")
 
-    m = folium.Map(location=[steps[0]['start_location']['lat'], steps[0]['start_location']['lng']], zoom_start=12)
-    for step in annotated:
-        coords = decode_polyline(step['polyline']['points'])
-        color = score_to_color(step['hazard_score'])
-        folium.PolyLine(coords, color=color, weight=5).add_to(m)
+    # Map initialization
+    m = folium.Map(location=[start_lat, start_lon], zoom_start=11)
+
+    # Draw segments with hazard color
+    for seg in result["segments"]:
+        folium.PolyLine(
+            locations=[seg["from"], seg["to"]],
+            color="red" if seg["hazard_score"] > 0.7 else "orange" if seg["hazard_score"] > 0.4 else "green",
+            weight=5,
+            tooltip=f"Hazard: {seg['hazard_score']}, Distance: {seg['distance_km']} km"
+        ).add_to(m)
 
     folium_static(m)
+
+    # Step-by-step directions
+    st.markdown("### 📋 Step-by-Step Directions")
+    with st.expander("View Directions"):
+        for i, step in enumerate(result["directions"]):
+            st.markdown(f"**Step {i+1}:** {step['instruction']} — {step['distance_m']}m, {step['duration_s']}s")
