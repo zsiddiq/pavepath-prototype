@@ -3,15 +3,11 @@ import openrouteservice
 import streamlit as st
 from pavepath.hazard_service import simulate_hazards_for_segment, score_segment
 
-
 # Tunable weights for composite cost function
 HAZARD_WEIGHT = 0.7
 DISTANCE_WEIGHT = 0.3
 
-# ORS API key (replace with your actual key or use st.secrets if deployed)
-
 ORS_API_KEY = st.secrets["api_keys"]["ors"]
-
 
 def haversine(coord1, coord2):
     lat1, lon1 = coord1
@@ -39,10 +35,20 @@ def compute_segment_cost(start, end, mode="safe"):
 
     return round(cost, 2), hazard_score, distance_km
 
+def extract_directions(route_json):
+    directions = []
+    for segment in route_json['features'][0]['properties']['segments']:
+        for step in segment['steps']:
+            directions.append({
+                "instruction": step['instruction'],
+                "distance_m": step['distance'],
+                "duration_s": step['duration']
+            })
+    return directions
+
 def get_driving_segments(origin, destination):
     client = openrouteservice.Client(key=ORS_API_KEY)
 
-    # Flip to (lon, lat) for ORS
     origin_coords = (origin[1], origin[0])
     destination_coords = (destination[1], destination[0])
 
@@ -53,28 +59,23 @@ def get_driving_segments(origin, destination):
     )
 
     geometry = response['features'][0]['geometry']['coordinates']
-
-    # Flip back to (lat, lon) for scoring and display
     segments = [
         {"from": (coord[1], coord[0]), "to": (geometry[i+1][1], geometry[i+1][0])}
         for i, coord in enumerate(geometry[:-1])
     ]
-    return segments
 
+    directions = extract_directions(response)
+    return segments, directions
 
 def optimize_route(locations, mode="safe"):
-    """
-    Supports 'safe', 'fast', and 'driving' modes.
-    - 'driving' uses ORS for real road segments
-    - others use greedy nearest-neighbor with haversine
-    """
     if not locations or len(locations) < 2:
         return {"segments": [], "mode": mode}
 
     if mode == "driving" and len(locations) == 2:
         origin, destination = locations
-        segments = get_driving_segments(origin, destination)
+        segments, directions = get_driving_segments(origin, destination)
         segment_details = []
+
         for seg in segments:
             cost, hazard_score, distance_km = compute_segment_cost(seg["from"], seg["to"], mode="safe")
             seg.update({
@@ -82,11 +83,12 @@ def optimize_route(locations, mode="safe"):
                 "distance_km": round(distance_km, 2),
                 "composite_cost": cost
             })
-            print(f"Segment: {seg['from']} → {seg['to']} | Score: {seg['hazard_score']}")
             segment_details.append(seg)
+
         return {
             "optimized_route": [origin, destination],
             "segments": segment_details,
+            "directions": directions,
             "mode": mode
         }
 
@@ -114,6 +116,7 @@ def optimize_route(locations, mode="safe"):
     return {
         "optimized_route": route,
         "segments": segment_details,
+        "directions": [],
         "mode": mode
     }
 
@@ -128,4 +131,6 @@ if __name__ == "__main__":
     print("Optimized Driving Route:")
     for seg in result["segments"]:
         print(f"{seg['from']} → {seg['to']} | Hazard: {seg['hazard_score']} | Distance: {seg['distance_km']} km | Cost: {seg['composite_cost']}")
-
+    print("\nStep-by-Step Directions:")
+    for i, step in enumerate(result["directions"]):
+        print(f"{i+1}. {step['instruction']} ({step['distance_m']}m, {step['duration_s']}s)")
