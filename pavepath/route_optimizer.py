@@ -65,6 +65,10 @@ def get_driving_segments(origin, destination):
     ]
 
     directions = extract_directions(response)
+    print("Extracted directions:")
+    for d in directions:
+        print(d["instruction"])
+
     return segments, directions
 
 def optimize_route(locations, mode="safe"):
