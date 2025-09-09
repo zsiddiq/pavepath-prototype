@@ -1,7 +1,11 @@
 import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Loads variables from .env
 
 GEOCODING_API = "https://api.opencagedata.com/geocode/v1/json"
-API_KEY = "your_api_key_here"
+API_KEY = os.getenv("OPENCAGE_API_KEY")  # Securely loaded
 
 def geocode_location(location: str):
     params = {"q": location, "key": API_KEY, "limit": 1}
