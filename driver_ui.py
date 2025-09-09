@@ -5,6 +5,21 @@ from pavepath.visualizer import render_route_map
 from pavepath.utils.geocoder import geocode_location
 
 from pavepath.utils.geocoder import geocode_location
+import os
+from dotenv import load_dotenv
+
+# Ensure env is loaded in Streamlit
+load_dotenv()
+
+import streamlit as st
+
+with st.expander("🔧 Env diagnostics"):
+    def _mask(v):
+        return (v[:4] + "..." + v[-4:]) if v and len(v) > 8 else ("set" if v else "None")
+
+    st.write("**CWD:**", os.getcwd())
+    st.write("**.env present:**", os.path.exists(".env"))
+    st.write("**OPENCAGE_API_KEY:**", _mask(os.getenv("OPENCAGE_API_KEY")))
 
 st.subheader("🔍 Geocoder Test")
 test_location = st.text_input("Test a location", "Anaheim, CA")
