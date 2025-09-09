@@ -2,6 +2,8 @@ import streamlit as st
 from streamlit_folium import st_folium
 from pavepath.route_optimizer import optimize_route
 from pavepath.visualizer import render_route_map
+from pavepath.utils.geocoder import geocode_location
+
 
 st.set_page_config(page_title="PavePath: Hazard-Aware Routing", layout="wide")
 st.title("🚧 PavePath: Hazard-Aware Route Viewer")
