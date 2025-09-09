@@ -1,30 +1,58 @@
-import requests
 import os
-from dotenv import load_dotenv
-
-load_dotenv()  # Loads variables from .env
+import requests
 
 GEOCODING_API = "https://api.opencagedata.com/geocode/v1/json"
-API_KEY = os.getenv("OPENCAGE_API_KEY")  # Securely loaded
-#print("[DEBUG] Loaded API key:", API_KEY)
-print("[DEBUG] API_KEY:", repr(API_KEY))
 
+def _get_api_key() -> str:
+    # Load from environment (GitHub Secrets or Streamlit Cloud)
+    return os.getenv("OPENCAGE_API_KEY")
 
+def geocode_location(location: str, debug: bool = False):
+    api_key = _get_api_key()
+    if debug:
+        masked = lambda k: (k[:4] + "..." + k[-4:]) if k and len(k) > 8 else ("set" if k else "None")
+        print(f"[geocoder] key loaded: {masked(api_key)} | query: '{location}'")
 
-def geocode_location(location: str):
-    params = {"q": location, "key": API_KEY, "limit": 1}
-    response = requests.get(GEOCODING_API, params=params, timeout=10)
-
-    # Diagnostic print
-    print("[DEBUG] Geocoder status:", response.status_code)
-    print("[DEBUG] Geocoder response:", response.text)
-
-    if response.status_code != 200:
+    if not api_key:
+        if debug:
+            print("[geocoder] Missing OPENCAGE_API_KEY")
         return None, None
 
-    data = response.json()
-    if data.get("results"):
-        coords = data["results"][0]["geometry"]
-        return coords["lat"], coords["lng"]
-    return None, None
+    try:
+        response = requests.get(
+            GEOCODING_API,
+            params={"q": location, "key": api_key, "limit": 1},
+            timeout=12,
+        )
+        if debug:
+            print(f"[geocoder] status={response.status_code}")
+            print(f"[geocoder] url={response.url}")
+            print(f"[geocoder] raw response={response.text[:300]}")
 
+        if response.status_code != 200:
+            return None, None
+
+        data = response.json()
+        results = data.get("results", [])
+        if not results:
+            if debug:
+                print("[geocoder] No results returned")
+            return None, None
+
+        geometry = results[0].get("geometry", {})
+        lat, lng = geometry.get("lat"), geometry.get("lng")
+        if lat is None or lng is None:
+            if debug:
+                print("[geocoder] Missing lat/lng in geometry")
+            return None, None
+
+        return float(lat), float(lng)
+
+    except requests.Timeout:
+        if debug:
+            print("[geocoder] Request timed out")
+        return None, None
+    except Exception as e:
+        if debug:
+            print(f"[geocoder] Exception: {e}")
+        return None, None
