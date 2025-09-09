@@ -4,6 +4,14 @@ from pavepath.route_optimizer import optimize_route
 from pavepath.visualizer import render_route_map
 from pavepath.utils.geocoder import geocode_location
 
+from pavepath.utils.geocoder import geocode_location
+
+st.subheader("🔍 Geocoder Test")
+test_location = st.text_input("Test a location", "Anaheim, CA")
+if st.button("Test Geocode"):
+    lat, lon = geocode_location(test_location)
+    st.write(f"Result: {lat}, {lon}")
+
 
 st.set_page_config(page_title="PavePath: Hazard-Aware Routing", layout="wide")
 st.title("🚧 PavePath: Hazard-Aware Route Viewer")
