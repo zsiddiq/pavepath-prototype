@@ -6,7 +6,9 @@ load_dotenv()  # Loads variables from .env
 
 GEOCODING_API = "https://api.opencagedata.com/geocode/v1/json"
 API_KEY = os.getenv("OPENCAGE_API_KEY")  # Securely loaded
-print("[DEBUG] Loaded API key:", API_KEY)
+#print("[DEBUG] Loaded API key:", API_KEY)
+print("[DEBUG] API_KEY:", repr(API_KEY))
+
 
 
 def geocode_location(location: str):
