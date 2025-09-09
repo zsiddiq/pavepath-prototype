@@ -7,16 +7,20 @@ from pavepath.utils.geocoder import geocode_location
 # Load API key from Streamlit Secrets
 API_KEY = st.secrets.get("OPENCAGE_API_KEY", None)
 
-# 🔧 Diagnostics panel
+# 🔧 Diagnostics panel with manual override
 with st.expander("🔧 Env diagnostics"):
     def _mask(v):
         return (v[:4] + "..." + v[-4:]) if v and len(v) > 8 else ("set" if v else "None")
-    st.write("**OPENCAGE_API_KEY:**", _mask(API_KEY))
 
+    st.write("**OPENCAGE_API_KEY from secrets:**", _mask(API_KEY))
+
+    manual_key = st.text_input("🔑 Manually enter API key (for testing)", "")
     test_location = st.text_input("Test a location", "Anaheim, CA")
-    if st.button("Test Geocode"):
-        lat, lon = geocode_location(test_location, api_key=API_KEY, debug=True)
-        st.write(f"Result: {lat}, {lon}")
+
+    if st.button("Run geocoder test"):
+        key_to_use = manual_key if manual_key else API_KEY
+        latlon = geocode_location(test_location, api_key=key_to_use, debug=True)
+        st.write("Test result:", latlon)
 
 # Page setup
 st.set_page_config(page_title="PavePath: Hazard-Aware Routing", layout="wide")
@@ -34,9 +38,10 @@ with st.form("route_form"):
 
 # Route generation
 if submitted:
+    key_to_use = manual_key if manual_key else API_KEY
     try:
-        origin_coords = geocode_location(origin, api_key=API_KEY, debug=True)
-        destination_coords = geocode_location(destination, api_key=API_KEY, debug=True)
+        origin_coords = geocode_location(origin, api_key=key_to_use, debug=True)
+        destination_coords = geocode_location(destination, api_key=key_to_use, debug=True)
 
         if None in origin_coords or None in destination_coords:
             st.error("Could not geocode one or both locations.")
@@ -58,3 +63,20 @@ if st.session_state.route_data:
     st.markdown(f"**Total Hazard Score:** {round(total_score, 2)}")
 
     high_risk = [seg for seg in segments if seg.get("hazard_score", 0) > 0.7]
+    if high_risk:
+        st.warning(f"{len(high_risk)} segment(s) flagged as high-risk.")
+
+    with st.expander("📊 Segment-Level Hazard Scores"):
+        for i, seg in enumerate(segments):
+            score = round(seg.get("hazard_score", 0), 2)
+            st.write(f"Segment {i+1}: {seg.get('from')} → {seg.get('to')} | Score: {score}")
+
+    directions = st.session_state.route_data.get("directions", [])
+    if directions:
+        st.subheader("📍 Step-by-Step Directions")
+        with st.expander("View Directions"):
+            for i, step in enumerate(directions):
+                st.markdown(f"**Step {i+1}:** {step['instruction']} — {step['distance_m']}m, {step['duration_s']}s")
+    else:
+        st.info("No directions available for this route.")
+
