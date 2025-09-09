@@ -7,6 +7,10 @@ from pavepath.utils.geocoder import geocode_location
 # Load API key from Streamlit Secrets
 API_KEY = st.secrets.get("OPENCAGE_API_KEY", None)
 
+# 🔔 Warn if secrets not injected
+if not API_KEY:
+    st.warning("⚠️ OPENCAGE_API_KEY not loaded from Streamlit Secrets. Using manual input fallback.")
+
 # 🔧 Diagnostics panel with manual override
 with st.expander("🔧 Env diagnostics"):
     def _mask(v):
