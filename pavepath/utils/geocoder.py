@@ -1,11 +1,11 @@
-import os
 import requests
+import streamlit as st
 
 GEOCODING_API = "https://api.opencagedata.com/geocode/v1/json"
 
 def _get_api_key() -> str:
-    # Load from environment (GitHub Secrets or Streamlit Cloud)
-    return os.getenv("OPENCAGE_API_KEY")
+    # Load from Streamlit Secrets Manager
+    return st.secrets["OPENCAGE_API_KEY"]
 
 def geocode_location(location: str, debug: bool = False):
     api_key = _get_api_key()
