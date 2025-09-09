@@ -22,7 +22,7 @@ with st.form("route_form"):
 
 # Parse and generate route
 if submitted:
-    from pavepath.geocoder import geocode_location  # Adjust import if needed
+    from pavepath.utils.geocoder import geocode_location   # Adjust import if needed
 
     try:
         origin_coords = geocode_location(origin)
