@@ -7,3 +7,4 @@ pandas
 numpy
 matplotlib
 openrouteservice>=2.3.0
+python-dotenv
