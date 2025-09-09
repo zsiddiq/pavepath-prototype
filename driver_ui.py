@@ -11,15 +11,17 @@ from dotenv import load_dotenv
 # Ensure env is loaded in Streamlit
 load_dotenv()
 
+import os
 import streamlit as st
+
+# Load from GitHub Actions or Streamlit Cloud env
+API_KEY = os.getenv("OPENCAGE_API_KEY")
 
 with st.expander("🔧 Env diagnostics"):
     def _mask(v):
         return (v[:4] + "..." + v[-4:]) if v and len(v) > 8 else ("set" if v else "None")
+    st.write("**OPENCAGE_API_KEY:**", _mask(API_KEY))
 
-    st.write("**CWD:**", os.getcwd())
-    st.write("**.env present:**", os.path.exists(".env"))
-    st.write("**OPENCAGE_API_KEY:**", _mask(os.getenv("OPENCAGE_API_KEY")))
 
 st.subheader("🔍 Geocoder Test")
 test_location = st.text_input("Test a location", "Anaheim, CA")
