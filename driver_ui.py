@@ -12,19 +12,34 @@ if "route_data" not in st.session_state:
 
 # Input fields for origin and destination
 with st.form("route_form"):
-    origin = st.text_input("Enter origin coordinates (lat, lon)", "33.8121, -117.9190")
-    destination = st.text_input("Enter destination coordinates (lat, lon)", "34.0522, -118.2437")
+    #origin = st.text_input("Enter origin coordinates (lat, lon)", "33.8121, -117.9190")
+    #destination = st.text_input("Enter destination coordinates (lat, lon)", "34.0522, -118.2437")
+    origin = st.text_input("Enter origin location", "Anaheim, CA")
+    destination = st.text_input("Enter destination location", "Menifee, CA")
     submitted = st.form_submit_button("Generate Route")
 
 # Parse and generate route
 if submitted:
+    from pavepath.geocoder import geocode_location  # Adjust import if needed
+
     try:
-        origin_coords = tuple(map(float, origin.split(",")))
-        destination_coords = tuple(map(float, destination.split(",")))
+        origin_coords = geocode_location(origin)
+        destination_coords = geocode_location(destination)
+        if None in origin_coords or None in destination_coords:
+            st.error("Could not geocode one or both locations.")
+            st.stop()
         locations = [origin_coords, destination_coords]
         st.session_state.route_data = optimize_route(locations, mode="driving")
-    except:
-        st.error("Invalid coordinates. Please enter as lat, lon")
+    except Exception as e:
+        st.error(f"Error generating route: {e}")
+
+   # try:
+    #    origin_coords = tuple(map(float, origin.split(",")))
+    #    destination_coords = tuple(map(float, destination.split(",")))
+    #    locations = [origin_coords, destination_coords]
+    #    st.session_state.route_data = optimize_route(locations, mode="driving")
+    #except:
+      #  st.error("Invalid coordinates. Please enter as lat, lon")
 
 # Display route map and hazard summary
 if st.session_state.route_data:
