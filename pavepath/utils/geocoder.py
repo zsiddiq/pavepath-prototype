@@ -1,14 +1,8 @@
 import requests
-import streamlit as st
 
 GEOCODING_API = "https://api.opencagedata.com/geocode/v1/json"
 
-def _get_api_key() -> str:
-    # Load from Streamlit Secrets Manager
-    return st.secrets["OPENCAGE_API_KEY"]
-
-def geocode_location(location: str, debug: bool = False):
-    api_key = _get_api_key()
+def geocode_location(location: str, api_key: str, debug: bool = False):
     if debug:
         masked = lambda k: (k[:4] + "..." + k[-4:]) if k and len(k) > 8 else ("set" if k else "None")
         print(f"[geocoder] key loaded: {masked(api_key)} | query: '{location}'")
@@ -56,3 +50,4 @@ def geocode_location(location: str, debug: bool = False):
         if debug:
             print(f"[geocoder] Exception: {e}")
         return None, None
+
