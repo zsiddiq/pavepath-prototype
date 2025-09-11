@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_folium import st_folium
-from pavepath.route_optimizer import optimize_route
+from pavepath.core.routing import optimize_route
 from pavepath.visualizer import render_route_map
 from pavepath.utils.geocoder import geocode_location
 from pavepath.utils.display import mask_key  # extracted helper
