@@ -3,6 +3,7 @@ from streamlit_folium import st_folium
 from pavepath.route_optimizer import optimize_route
 from pavepath.visualizer import render_route_map
 from pavepath.utils.geocoder import geocode_location
+from pavepath.utils.display import mask_key  # NEW: extracted helper
 
 # Load API key from Streamlit Secrets
 API_KEY = st.secrets.get("OPENCAGE_API_KEY", None)
@@ -11,28 +12,25 @@ API_KEY = st.secrets.get("OPENCAGE_API_KEY", None)
 if not API_KEY:
     st.warning("⚠️ OPENCAGE_API_KEY not loaded from Streamlit Secrets. Using manual input fallback.")
 
-# 🔧 Diagnostics panel with manual override
-with st.expander("🔧 Env diagnostics"):
-    def _mask(v):
-        return (v[:4] + "..." + v[-4:]) if v and len(v) > 8 else ("set" if v else "None")
-
-    st.write("**OPENCAGE_API_KEY from secrets:**", _mask(API_KEY))
-
-    manual_key = st.text_input("🔑 Manually enter API key (for testing)", "")
-    test_location = st.text_input("Test a location", "Anaheim, CA")
-
-    if st.button("Run geocoder test"):
-        key_to_use = manual_key if manual_key else API_KEY
-        latlon = geocode_location(test_location, api_key=key_to_use, debug=True)
-        st.write("Test result:", latlon)
-
-# Page setup
+# Page setup (place early)
 st.set_page_config(
     page_title="PavePath: Hazard-Aware Routing",
     layout="centered",  # Better for mobile readability
 )
 
 st.title("🚧 PavePath: Hazard-Aware Route Viewer")
+
+# 🔧 Diagnostics panel with manual override
+with st.expander("🔧 Env diagnostics"):
+    st.write("**OPENCAGE_API_KEY from secrets:**", mask_key(API_KEY))
+
+    manual_key = st.text_input("🔑 Manually enter API key (for testing)", "")
+    test_location = st.text_input("Test a location", "Anaheim, CA")
+
+    if st.button("🧪 Run Geocoder Test"):
+        key_to_use = manual_key if manual_key else API_KEY
+        latlon = geocode_location(test_location, api_key=key_to_use, debug=True)
+        st.write("Test result:", latlon)
 
 # Initialize session state
 if "route_data" not in st.session_state:
@@ -43,7 +41,6 @@ with st.form("route_form"):
     origin = st.text_input("Enter origin location", "Anaheim, CA")
     destination = st.text_input("Enter destination location", "Menifee, CA")
     submitted = st.form_submit_button("📍 Generate Route")
-
 
 # Route generation
 if submitted:
