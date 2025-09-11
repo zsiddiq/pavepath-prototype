@@ -3,8 +3,21 @@ from streamlit_folium import st_folium
 from pavepath.route_optimizer import optimize_route
 from pavepath.visualizer import render_route_map
 from pavepath.utils.geocoder import geocode_location
-from pavepath.utils.display import mask_key  # NEW: extracted helper
+from pavepath.utils.display import mask_key  # extracted helper
 from pavepath.config.constants import DEFAULT_ORIGIN, DEFAULT_DESTINATION, HAZARD_THRESHOLD
+
+
+# -----------------------------
+# Helpers
+# -----------------------------
+def generate_route(origin: str, destination: str, api_key: str):
+    origin_coords = geocode_location(origin, api_key=api_key, debug=True)
+    destination_coords = geocode_location(destination, api_key=api_key, debug=True)
+
+    if None in origin_coords or None in destination_coords:
+        return None
+
+    return optimize_route([origin_coords, destination_coords], mode="driving")
 
 
 # Load API key from Streamlit Secrets
@@ -40,7 +53,6 @@ if "route_data" not in st.session_state:
 
 # Location-based input form
 with st.form("route_form"):
-    # Replace hardcoded defaults
     origin = st.text_input("Enter origin location", DEFAULT_ORIGIN)
     destination = st.text_input("Enter destination location", DEFAULT_DESTINATION)
     submitted = st.form_submit_button("📍 Generate Route")
@@ -49,16 +61,11 @@ with st.form("route_form"):
 if submitted:
     key_to_use = manual_key if manual_key else API_KEY
     try:
-        origin_coords = geocode_location(origin, api_key=key_to_use, debug=True)
-        destination_coords = geocode_location(destination, api_key=key_to_use, debug=True)
-
-        if None in origin_coords or None in destination_coords:
+        route = generate_route(origin, destination, key_to_use)
+        if route:
+            st.session_state.route_data = route
+        else:
             st.error("Could not geocode one or both locations.")
-            st.stop()
-
-        locations = [origin_coords, destination_coords]
-        st.session_state.route_data = optimize_route(locations, mode="driving")
-
     except Exception as e:
         st.error(f"Error generating route: {e}")
 
@@ -71,7 +78,6 @@ if st.session_state.route_data:
     total_score = sum(seg.get("hazard_score", 0) for seg in segments)
     st.markdown(f"**Total Hazard Score:** {round(total_score, 2)}")
 
-    # Replace hazard threshold
     high_risk = [seg for seg in segments if seg.get("hazard_score", 0) > HAZARD_THRESHOLD]
     if high_risk:
         st.warning(f"{len(high_risk)} segment(s) flagged as high-risk.")
@@ -86,7 +92,10 @@ if st.session_state.route_data:
         st.subheader("📍 Step-by-Step Directions")
         with st.expander("View Directions"):
             for i, step in enumerate(directions):
-                st.markdown(f"**Step {i+1}:** {step['instruction']} — {step['distance_m']}m, {step['duration_s']}s")
+                st.markdown(
+                    f"**Step {i+1}:** {step['instruction']} — {step['distance_m']}m, {step['duration_s']}s"
+                )
     else:
         st.info("No directions available for this route.")
+
 
