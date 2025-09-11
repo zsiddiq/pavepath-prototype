@@ -4,6 +4,8 @@ from pavepath.route_optimizer import optimize_route
 from pavepath.visualizer import render_route_map
 from pavepath.utils.geocoder import geocode_location
 from pavepath.utils.display import mask_key  # NEW: extracted helper
+from pavepath.config.constants import DEFAULT_ORIGIN, DEFAULT_DESTINATION, HAZARD_THRESHOLD
+
 
 # Load API key from Streamlit Secrets
 API_KEY = st.secrets.get("OPENCAGE_API_KEY", None)
@@ -38,8 +40,9 @@ if "route_data" not in st.session_state:
 
 # Location-based input form
 with st.form("route_form"):
-    origin = st.text_input("Enter origin location", "Anaheim, CA")
-    destination = st.text_input("Enter destination location", "Menifee, CA")
+    # Replace hardcoded defaults
+    origin = st.text_input("Enter origin location", DEFAULT_ORIGIN)
+    destination = st.text_input("Enter destination location", DEFAULT_DESTINATION)
     submitted = st.form_submit_button("📍 Generate Route")
 
 # Route generation
@@ -68,7 +71,8 @@ if st.session_state.route_data:
     total_score = sum(seg.get("hazard_score", 0) for seg in segments)
     st.markdown(f"**Total Hazard Score:** {round(total_score, 2)}")
 
-    high_risk = [seg for seg in segments if seg.get("hazard_score", 0) > 0.7]
+    # Replace hazard threshold
+    high_risk = [seg for seg in segments if seg.get("hazard_score", 0) > HAZARD_THRESHOLD]
     if high_risk:
         st.warning(f"{len(high_risk)} segment(s) flagged as high-risk.")
 
