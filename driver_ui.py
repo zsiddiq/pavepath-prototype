@@ -27,7 +27,11 @@ with st.expander("🔧 Env diagnostics"):
         st.write("Test result:", latlon)
 
 # Page setup
-st.set_page_config(page_title="PavePath: Hazard-Aware Routing", layout="wide")
+st.set_page_config(
+    page_title="PavePath: Hazard-Aware Routing",
+    layout="centered",  # Better for mobile readability
+)
+
 st.title("🚧 PavePath: Hazard-Aware Route Viewer")
 
 # Initialize session state
@@ -38,7 +42,8 @@ if "route_data" not in st.session_state:
 with st.form("route_form"):
     origin = st.text_input("Enter origin location", "Anaheim, CA")
     destination = st.text_input("Enter destination location", "Menifee, CA")
-    submitted = st.form_submit_button("Generate Route")
+    submitted = st.form_submit_button("📍 Generate Route")
+
 
 # Route generation
 if submitted:
@@ -60,7 +65,7 @@ if submitted:
 # Route display
 if st.session_state.route_data:
     st.subheader("🗺️ Optimized Route with Hazard Overlays")
-    st_folium(render_route_map(st.session_state.route_data), width=700, height=500)
+    st_folium(render_route_map(st.session_state.route_data), width=350, height=400)
 
     segments = st.session_state.route_data.get("segments", [])
     total_score = sum(seg.get("hazard_score", 0) for seg in segments)
