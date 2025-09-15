@@ -2,6 +2,7 @@ import math
 import openrouteservice
 import streamlit as st
 from pavepath.hazard_service import simulate_hazards_for_segment, score_segment
+from pavepath.core.directions import extract_directions
 
 # Tunable weights for composite cost function
 HAZARD_WEIGHT = 0.7
@@ -34,17 +35,6 @@ def compute_segment_cost(start, end, mode="safe"):
         cost = distance_km
 
     return round(cost, 2), hazard_score, distance_km
-
-def extract_directions(route_json):
-    directions = []
-    for segment in route_json['features'][0]['properties']['segments']:
-        for step in segment['steps']:
-            directions.append({
-                "instruction": step['instruction'],
-                "distance_m": step['distance'],
-                "duration_s": step['duration']
-            })
-    return directions
 
 def get_driving_segments(origin, destination):
     client = openrouteservice.Client(key=ORS_API_KEY)
