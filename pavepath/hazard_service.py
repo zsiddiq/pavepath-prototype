@@ -1,6 +1,7 @@
-from hazard_sources.osm_loader import load_osm_hazards
-from hazard_scoring import score_hazards
-from hazard_rules import should_reroute
+from .hazard_sources.osm_loader import load_osm_hazards
+from .hazard_scoring import score_hazards
+from .hazard_rules import should_reroute
+
 
 def analyze_route(route_geometry, surface_data=None):
     """
