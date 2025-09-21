@@ -1,6 +1,7 @@
 # tests/test_input_parser.py
 
-from input_parser import parse_input
+from pavepath.input_parser import parse_input   # ✅ correct
+
 
 def test_parse_coordinates():
     result = parse_input([(33.8121, -117.9190)])
