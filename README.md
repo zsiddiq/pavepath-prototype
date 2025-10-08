@@ -18,13 +18,78 @@ Monetizable features include:
 
 ## 🧠 Use Cases
 
+### 🚗 Driver-Facing
+| User Story | Description |
+|------------|-------------|
+| 🧭 Hazard-Aware Routing | Drivers receive safer route suggestions that avoid unsafe or inefficient paths. |
+| 🕒 Real-Time Updates | Drivers get live hazard alerts and rerouting options. |
+| 📍 Visual Hazard Overlays | Hazard zones are displayed on the map for informed decision-making. |
+| 🧾 Premium Features | Subscribers access historical hazard trends and advanced routing. |
+| 🧑‍💻 Easy Hazard Reporting | Users can quickly submit hazard reports to improve accuracy. |
+
+### 🏢 Fleet & Community
+| User Story | Description |
+|------------|-------------|
+| 📊 Fleet Dashboards | Managers view hazard incidents and driver safety metrics. |
+| 🛰️ Dispatcher Tools | Dispatchers push updated safe routes to drivers. |
+| 💰 Cost Analytics | Operators see savings tied to hazard avoidance. |
+| 🗺️ Community Heatmaps | Aggregated hazard data helps communities understand long-term risks. |
+| 🔔 Configurable Alerts | Subscribers receive SMS, push, or email hazard notifications. |
+
+### 💼 Admin & System
+| User Story | Description |
+|------------|-------------|
+| 🧪 Hazard Validation | Admins validate hazard submissions before they affect routing. |
+| 📈 Time-Decay Scoring | System reduces weight of outdated hazard data. |
+| 🔐 Subscription Gating | Stripe-based feature gating enforces monetization. |
+| 🧰 Modular Routing Logic | Routing logic is logged and reusable across domains. |
+| 🗺️ Hazard Visualization | Hazard density and route safety scores are visualized for users. |
+
+### 🧪 Validation & Feedback
+| User Story | Description |
+|------------|-------------|
+| 🗣️ Beta Feedback | Testers provide feedback on routing accuracy and UI clarity. |
+| 📬 False Positive Reporting | Users flag outdated or incorrect hazards. |
+| 🧭 Benchmarking | Testers compare PavePath routes with Google Maps or Waze. |
+
+### 🧱 Modular Build (for Developers)
+| User Story | Description |
+|------------|-------------|
+| 🧠 Rapid Prototyping | Developers can quickly iterate on hazard scoring modules. |
+| 🧩 Reusable Logic Blocks | Core modules (e.g., `input_parser`, `route_optimizer`) are productized. |
+| 💡 Cross-Domain Validation | Core logic can be applied to other domains (e.g., STR routing, orchard diagnostics). |
+
+### 🏡 Additional Domain Use Cases
 | Use Case | Description |
 |----------|-------------|
-| 🏡 STR Host Safety | Hosts can warn guests about unsafe access roads or nighttime hazards |
-| 🚚 Infrastructure Crews | Route planning for utility trucks avoiding dirt paths and hazard zones |
-| 🚶‍♀️ Personal Safety | Nighttime routing that avoids poorly lit or high-risk streets |
-| 🛻 Rural Navigation | Smart rerouting around unpaved or seasonal roads |
-| 🧱 Municipal Deployment | Local governments can deploy PavePath for public safety routing |
+| 🏡 STR Host Safety | Hosts can warn guests about unsafe access roads or nighttime hazards. |
+| 🚚 Infrastructure Crews | Utility trucks can avoid dirt paths and hazard zones. |
+| 🚶‍♀️ Personal Safety | Nighttime routing avoids poorly lit or high-risk streets. |
+| 🛻 Rural Navigation | Smart rerouting around unpaved or seasonal roads. |
+| 🧱 Municipal Deployment | Local governments deploy PavePath for public safety routing. |
+
+---
+
+## 🗂️ Modules → Use Cases Mapping
+
+| Module / File | Related Use Cases |
+|---------------|------------------|
+| `pavepath/hazard_scoring.py` | Hazard-aware routing, time-decay scoring, modular build (rapid prototyping). |
+| `pavepath/hazard_service.py` | Hazard validation, admin workflows, ingestion of hazard reports. |
+| `pavepath/hazard_sources/osm_loader.py` | Community hazard data ingestion, rural navigation, infrastructure crews. |
+| `pavepath/route_optimizer.py` | Driver routing, fleet dispatch, benchmarking vs. Google Maps/Waze. |
+| `pavepath/core/routing.py` | Core routing logic, modular reuse across domains. |
+| `pavepath/core/alerts.py` | Real-time updates, driver hazard alerts, configurable notifications. |
+| `pavepath/routing/google_maps.py` | Validation & benchmarking against external routing engines. |
+| `pavepath/visualizer.py` + `static/map_embed.html` | Hazard density visualization, route safety overlays. |
+| `pavepath/input_parser.py` | Reusable logic block, input validation (coordinates, addresses, grid IDs). |
+| `pavepath/utils/` (geocoder, polyline_tools, color_map) | Support for hazard overlays, visualization, and routing utilities. |
+| `tests/test_hazard_service.py` | Validation of hazard ingestion and admin workflows. |
+| `tests/test_route_optimizer.py` | Ensures routing logic aligns with hazard-aware use cases. |
+| `tests/test_input_parser.py` | Input validation rules, modular build testing. |
+| *(planned)* `subscriptions/stripe_gate.py` | Subscription gating, monetization enforcement. |
+| *(planned)* `feedback/collector.py` | Beta feedback, false positive reporting. |
+| *(planned)* `fleet/dashboard.py` | Fleet dashboards, operator analytics. |
 
 ---
 
@@ -60,16 +125,17 @@ sequenceDiagram
     Reroute Logic-->>Frontend: Return optimized safe route
     Frontend-->>User: Display route with safety alerts
 
-Contribution Guidelines
+
+🤝 Contribution Guidelines
 We welcome contributions from developers, designers, and data scientists who want to build real-world, monetizable tech.
 
 By contributing, you agree that:
 
-Your submissions may be used in commercial versions of PavePath
+Your submissions may be used in commercial versions of PavePath.
 
-You retain the right to showcase your work professionally (e.g., portfolio, GitHub profile)
+You retain the right to showcase your work professionally (e.g., portfolio, GitHub profile).
 
-You grant us a non-exclusive license to use, modify, and distribute your contributions
+You grant us a non-exclusive license to use, modify, and distribute your contributions.
 
 To contribute:
 
@@ -84,48 +150,39 @@ We proudly highlight contributors like zgoal, whose professional-grade work help
 📜 License
 This project uses a dual-license model:
 
-MIT License for the core engine — allowing free use, modification, and distribution
+MIT License for the core engine — allowing free use, modification, and distribution.
 
-Commercial License for premium modules and enterprise deployments
+Commercial License for premium modules and enterprise deployments.
 
 See LICENSE.md for details.
 
 📣 Contact & Commercial Inquiries
-Interested in licensing PavePath or deploying it for your organization?
+Interested in licensing PavePath or deploying it for your organization? 📧 Email: admin@zgoal.com 🌐 Website: www.zgoal.com
 
-📧 Email: admin@zgoal.com 🌐 Website: www.zgoal.com
-
-Supported Input Formats
-Our route optimization system accepts three types of input formats for location data:
-
-1. Coordinates (Latitude/Longitude)
-Format: List of tuples or objects containing latitude and longitude
-
-Example:
+📍 Supported Input Formats
+Coordinates (Latitude/Longitude) Example:
 
 python
 [(33.8121, -117.9190), (34.0522, -118.2437)]
-✅ Recommended for GPS-based systems and precision routing
-
-2. Addresses
-Format: List of strings representing physical addresses
-
-Example:
+Addresses Example:
 
 python
 ["123 Main St, Menifee, CA", "456 Elm St, Los Angeles, CA"]
-🔄 Requires geocoding to convert to coordinates before routing
-
-3. Grid IDs
-Format: List of custom grid identifiers used in internal mapping systems
-
-Example:
+Grid IDs Example:
 
 python
 ["A1", "B3", "C7"]
-🗺️ Useful for drone delivery zones, warehouse layouts, or predefined map sectors
-
 🔍 Input Validation Rules
-Coordinates must be valid floats within latitude/longitude bounds
+Coordinates must be valid floats within latitude/longitude bounds.
 
-Addresses must be non-empty strings; geocoding errors will be flagged
+Addresses must be non-empty strings; geocoding errors will be flagged.
+
+Grid IDs must match predefined map sectors.
+
+Code
+
+---
+
+This version keeps your original README intact but **expands the Use Cases section** to include all the stakeholder groups and user stories we’ve been working on.  
+
+Would you like me to also add a **“Modules → Use Cases” mapping table** (so contributors can see which Python files implement which stories), or keep that in a separate `CONTRIBUTING.md`?
