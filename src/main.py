@@ -1,19 +1,24 @@
+import os
+import random
+import pandas as pd
 import streamlit as st
 import pydeck as pdk
-import geopandas as gpd
-from shapely.geometry import LineString
+import streamlit.components.v1 as components
+
 from surface_overlay import mapper
 from pavepath.hazard_service import analyze_route
 from pavepath.visualizer import visualize_route_scores
-import random
-import pandas as pd
-import streamlit.components.v1 as components
 
-# 🔐 Secrets
+# 🔐 Secrets Handling
+MAPBOX_TOKEN = None
 try:
     MAPBOX_TOKEN = st.secrets["api_keys"]["mapbox"]
-except KeyError:
-    st.error("Missing Mapbox token in secrets. Please set api_keys.mapbox in .streamlit/secrets.toml")
+except Exception:
+    MAPBOX_TOKEN = os.environ.get("MAPBOX_TOKEN")
+
+if not MAPBOX_TOKEN:
+    st.error("❌ Missing Mapbox token. Please set it in .streamlit/secrets.toml (local) "
+             "or as an environment variable MAPBOX_TOKEN (Colab).")
     st.stop()
 
 # 🖼️ Page Setup
@@ -102,10 +107,43 @@ if st.checkbox("Download hazard analysis as CSV"):
 if not filtered_roads.empty:
     def linestring_to_coords(geom):
         if geom and geom.geom_type == "LineString":
-            return [[lat, lon] for lon, lat in geom.coords]  # swap
+            return [[lat, lon] for lon, lat in geom.coords]  # swap to [lat, lon]
+        return []
+
+    filtered_roads["path"] = filtered_roads.geometry.apply(linestring_to_coords)
+
+    def score_to_color(score):
+        if score is None:
+            return [100, 100, 255]  # neutral blue
+        if score < 3:
+            return [0, 180, 80]     # green
+        elif score < 6:
+            return [255, 200, 0]    # yellow
+        else:
+            return [220, 60, 60]    # red
+
+    filtered_roads["color"] = filtered_roads.get("hazard_score", pd.Series([None] * len(filtered_roads))).apply(score_to_color)
+
+    layer = pdk.Layer(
+        "PathLayer",
+        filtered_roads,
+        get_path="path",
+        get_color="color",
+        width_scale=1,
+        width_min_pixels=3,
+        pickable=True
+    )
+
+    view_state = pdk.ViewState(latitude=33.7, longitude=-117.2, zoom=10)
+    st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state, map_style=None))
+else:
+    st.info("No data to display on map.")
 
 # 🌐 Google Maps Embed
 if st.checkbox("Show Google Maps version"):
-    with open("static/map_embed.html", "r") as f:
-        html_code = f.read()
-    components.html(html_code, height=600)
+    try:
+        with open("static/map_embed.html", "r") as f:
+            html_code = f.read()
+        components.html(html_code, height=600)
+    except FileNotFoundError:
+        st.error("Google Maps embed file not found at static/map_embed.html")
