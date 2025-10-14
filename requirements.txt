@@ -9,3 +9,8 @@ numpy==1.26.4
 matplotlib==3.9.2
 openrouteservice==2.3.3
 python-dotenv==1.0.1
+
+# Explicit geospatial dependencies
+fiona==1.9.6
+pyproj==3.6.1
+rtree==1.3.0
